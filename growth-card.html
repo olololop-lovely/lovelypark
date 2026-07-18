@@ -303,19 +303,12 @@ button.soft:hover{background:var(--pink-mid)}
 <!-- ── STEP 5 ── -->
 <div class="step" id="step5">
   <div class="step-eyebrow">STEP 5</div>
-  <div class="step-title">다짐과 함께 성장할 곳</div>
-  <div class="step-desc">소리 내어 읽을 때 다짐은 더 단단해집니다.</div>
+  <div class="step-title">함께 성장할 곳과 점검 방법</div>
+  <div class="step-desc">혼자가 아닌 성장 — 나를 지지해줄 곳과 사람, 그리고 확인 방법을 적어보세요.</div>
   <div class="cheer">
     <div class="cheer-emoji">🌸</div>
     <div class="cheer-main">선생님이 오늘 여기까지 채운 것들이<br>내일의 교실을 바꿉니다.</div>
     <div class="cheer-sub">완벽하지 않아도 됩니다. 방향만 있으면 충분해요.</div>
-  </div>
-  <div class="card">
-    <span class="fl b" style="margin-bottom:10px">나의 성장 다짐</span>
-    <div class="g2" style="margin-bottom:10px">
-      <div><span class="fl">키울 역량</span><input type="text" id="p1v" placeholder="D역량 교수학습 설계"></div>
-      <div><span class="fl">만들 수업</span><input type="text" id="p2v" placeholder="데이터 기반 맞춤 수업"></div>
-    </div>
   </div>
   <div class="card">
     <span class="fl b" style="margin-bottom:4px">함께 성장할 곳·사람</span>
@@ -324,6 +317,23 @@ button.soft:hover{background:var(--pink-mid)}
     <div style="display:flex;gap:8px;margin-top:6px">
       <input type="text" id="comm-inp" placeholder="전남과학교사연구회, OO선생님..." style="flex:1" onkeydown="if(event.key==='Enter')addComm()">
       <button onclick="addComm()">추가</button>
+    </div>
+  </div>
+  <div class="card">
+    <span class="fl b" style="margin-bottom:4px">점검 방법</span>
+    <span class="fl">6개월 뒤 내 성장을 어떻게 확인할 건가요? 항목마다 추가해 보세요.</span>
+    <ul class="resolve-list" id="cklist"></ul>
+    <button class="soft" onclick="addCk()" style="margin-top:8px">
+      <i class="ti ti-plus"></i> 항목 추가
+    </button>
+    <div style="margin-top:10px">
+      <span class="hint-toggle" id="cktoggle" onclick="toggleCkHint()">
+        <i class="ti ti-bulb"></i> 예시 참고하기
+      </span>
+      <div class="hint-box" id="ckhbox">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:8px">클릭하면 새 항목으로 추가됩니다</p>
+        <ul class="hint-list" id="ckhlist"></ul>
+      </div>
     </div>
   </div>
   <div class="btn-row">
@@ -375,7 +385,10 @@ button.soft:hover{background:var(--pink-mid)}
       <div class="out-sec-title">함께 성장할 곳·사람</div>
       <div id="ocomm"></div>
     </div>
-    <div id="opledge"></div>
+    <div class="out-sec">
+      <div class="out-sec-title">점검 방법</div>
+      <div id="ocheck"></div>
+    </div>
   </div>
 </div>
 
@@ -410,6 +423,15 @@ const tgt=[4,4,4,4,4,4,4];
 const selS=new Set(), selW=new Set();
 const resolves=[''];
 const comms=[];
+const cklist=[''];
+const CK_HINTS=[
+  '매월 말 동료 선생님과 실천 인증 카톡 나누기',
+  '2학기 수업 포트폴리오 한 권 만들기',
+  '학기 말 학생 반응 변화를 간단히 기록하기',
+  '연구회나 학습공동체에서 수업 나눔 한 번 하기',
+  '6개월 뒤 이 성장 카드 꺼내서 다시 읽어보기',
+  '동료에게 내 변화를 솔직하게 피드백 받기',
+];
 let chart=null, ochart=null;
 
 /* ── 슬라이더 ── */
@@ -496,6 +518,28 @@ function renderComm(){
 window.addComm=()=>{const v=document.getElementById('comm-inp').value.trim();if(!v)return;comms.push(v);document.getElementById('comm-inp').value='';renderComm();};
 window.delC=i=>{comms.splice(i,1);renderComm();};
 
+function renderCk(){
+  document.getElementById('cklist').innerHTML=cklist.map((v,i)=>`
+    <li class="resolve-item">
+      <div class="rnum" style="background:var(--lavender);color:var(--lavender-dark)">✓</div>
+      <input class="rinput" type="text" value="${v}" placeholder="나는 이렇게 점검하겠다"
+        oninput="cklist[${i}]=this.value">
+      <button class="rdel" onclick="delCk(${i})">×</button>
+    </li>`).join('');
+}
+function buildCkHints(){
+  document.getElementById('ckhlist').innerHTML=CK_HINTS.map(h=>`<li onclick="useCkHint('${h.replace(/'/g,"\\'")}')"><span>${h}</span></li>`).join('');
+}
+window.addCk=()=>{cklist.push('');renderCk();};
+window.delCk=i=>{if(cklist.length===1){cklist[0]='';renderCk();return;}cklist.splice(i,1);renderCk();};
+window.useCkHint=h=>{const e=cklist.indexOf('');if(e>=0)cklist[e]=h;else cklist.push(h);renderCk();};
+window.toggleCkHint=()=>{
+  const b=document.getElementById('ckhbox');
+  const t=document.getElementById('cktoggle');
+  const o=b.classList.toggle('open');
+  t.innerHTML=`<i class="ti ti-bulb"></i> ${o?'예시 접기':'예시 참고하기'}`;
+};
+
 /* ── 카드 생성 ── */
 function makeCard(){
   const name=document.getElementById('name').value||'선생님';
@@ -526,10 +570,10 @@ function makeCard(){
   const fil=resolves.filter(r=>r.trim());
   document.getElementById('oresolves').innerHTML=fil.length?fil.map(r=>`<span class="pill">${r}</span>`).join(''):'<span style="font-size:12px;color:#aaa">입력된 항목 없음</span>';
   document.getElementById('ocomm').innerHTML=comms.length?comms.map(c=>`<span class="pill">${c}</span>`).join(''):'<span style="font-size:12px;color:#aaa">입력된 항목 없음</span>';
-  const p1=document.getElementById('p1v').value||'___';
-  const p2=document.getElementById('p2v').value||'___';
-  document.getElementById('opledge').innerHTML=`
-    <div class="pledge-main">나는 <strong>${p1}</strong> 역량을 키워,<br><strong>${p2}</strong> 수업을 만들겠습니다!</div>`;
+  const filledCk=cklist.filter(c=>c.trim());
+  document.getElementById('ocheck').innerHTML=filledCk.length
+    ?filledCk.map(c=>`<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text)"><span style="color:var(--lavender-dark);font-weight:700;flex-shrink:0">✓</span>${c}</div>`).join('')
+    :'<span style="font-size:12px;color:#aaa">입력된 항목 없음</span>';
   document.getElementById('output').classList.add('show');
   document.getElementById('dl-row').style.display='flex';
   setTimeout(()=>{
@@ -553,7 +597,7 @@ function go(n){
   if(n===2){LBL.forEach((_,i)=>tgt[i]=Math.max(post[i],tgt[i]));buildTarget();setTimeout(buildRadar,60);}
   if(n===3)buildTags();
   if(n===4)buildResolves();
-  if(n===5)renderComm();
+  if(n===5){renderComm();renderCk();buildCkHints();}
   document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active',i===n-1));
   document.querySelectorAll('.prog-dot').forEach((d,i)=>{d.classList.toggle('done',i<n-1);d.classList.toggle('active',i===n-1);});
   document.getElementById('prog-txt').textContent=`${n}/5`;
